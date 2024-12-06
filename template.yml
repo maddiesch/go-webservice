@@ -1,0 +1,44 @@
+Transform: AWS::Serverless-2016-10-31
+Parameters:
+  LogLevelApplicationParameter:
+    Type: String
+    Description: Choose the log level for application logs that are sent to CloudWatch Logs.
+    Default: INFO
+    AllowedValues:
+      - DEBUG
+      - INFO
+      - WARN
+      - ERROR
+  LogLevelSystemParameter:
+    Type: String
+    Description: Choose the log level for Lambda system-generated logs that are sent to CloudWatch Logs.
+    Default: INFO
+    AllowedValues:
+      - DEBUG
+      - INFO
+      - WARN
+Globals:
+  Function:
+    Runtime: provided.al2023
+    Architectures: [arm64]
+    Timeout: 30
+    MemorySize: 512
+    Handler: bootstrap
+    LoggingConfig:
+      LogFormat: JSON
+      ApplicationLogLevel: !Ref LogLevelApplicationParameter
+      SystemLogLevel: !Ref LogLevelSystemParameter
+Resources:
+  RequestHandlerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./build/lambda/linux/arm64/request-handler
+      Policies:
+        - AWSLambdaBasicExecutionRole
+      FunctionUrlConfig:
+        AuthType: NONE
+        InvokeMode: RESPONSE_STREAM
+Outputs:
+  RequestHandlerFunctionURL:
+    Description: "URL for the RequestHandlerFunction"
+    Value: !GetAtt RequestHandlerFunctionUrl.FunctionUrl
